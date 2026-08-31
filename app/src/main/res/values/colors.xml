@@ -1,0 +1,11 @@
+<resources>
+    <!-- Used only on Android versions below 12, where Material You dynamic
+         color isn't available. -->
+    <color name="fallback_primary">#2E7D32</color>
+
+    <!-- Widget colors. Overridden on Android 12+ (values-v31) to use the
+         system's wallpaper-derived palette so the widget matches the app. -->
+    <color name="widget_background">#2E7D32</color>
+    <color name="widget_on_background">#FFFFFF</color>
+    <color name="widget_on_background_secondary">#E0FFFFFF</color>
+</resources>

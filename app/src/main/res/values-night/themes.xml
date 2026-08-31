@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base Dark Theme -->
+    <style name="Theme.JustPray" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">?attr/colorSurface</item>
+    </style>
+
+    <!-- Pure AMOLED Black Theme -->
+    <style name="Theme.PrayerShield.Amoled" parent="Theme.JustPray">
+        <item name="android:windowBackground">#000000</item>
+        <item name="android:colorBackground">#000000</item>
+    </style>
+</resources>

@@ -1,0 +1,9 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Material3 base theme; dynamic (Material You) color is applied at runtime
+         in PrayerShieldApp.kt on Android 12+. On older versions this falls back to
+         the default Material3 palette below. -->
+    <style name="Theme.JustPray" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/fallback_primary</item>
+        <item name="android:windowBackground">?attr/colorSurface</item>
+    </style>
+</resources>

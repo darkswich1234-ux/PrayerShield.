@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">Prayer Shield</string>
+    <string name="streak_format">%1$s</string>
+    <string name="lock_banner_text">Mark your current prayer as done to change settings.</string>
+    <string name="day_streak_label">Day Streak</string>
+    <string name="next_goal_label">Your next goal</string>
+    <string name="all_caught_up">All caught up</string>
+    <string name="check_prayers_label">Check your prayers</string>
+    <string name="edit_times_label">Edit times</string>
+    <string name="open_accessibility_settings">Open Accessibility Settings</string>
+    <string name="use_location">Use my current location</string>
+    <string name="choose_apps_label">Choose which apps to block until you pray</string>
+    <string name="all_apps">All apps</string>
+    <string name="except_essential">All except essential</string>
+    <string name="save_apps">Save blocked apps</string>
+    <string name="protection_header">Make Prayer Shield harder to remove or turn off mid-prayer-window.</string>
+    <string name="protection_note">Note: nothing here is unbeatable — booting your phone into Safe Mode disables this along with every similar app. It just adds real friction against casual bypassing.</string>
+    <string name="enable_uninstall_protection">Enable uninstall protection</string>
+    <string name="uninstall_protection_on">Uninstall protection is on</string>
+    <string name="status_not_enabled">Status: not enabled</string>
+    <string name="status_enabled">Status: enabled</string>
+    <string name="block_settings_desc">Also block the Settings app while a prayer is due (stronger, but blocks all Settings access, not just the uninstall screen)</string>
+
+    <string name="time_format">%1$d:%2$02d %3$s</string>
+    <string name="prayed_status">✓ Prayed</string>
+    <string name="not_yet_status">Not yet</string>
+    <string name="mark_prayed_label">Mark prayed</string>
+    <string name="prayed_toast_format">%1$s marked as prayed. Apps unlocked.</string>
+    <string name="not_due_toast_format">%1$s isn\'t due yet.</string>
+    <string name="apps_saved_toast">Blocked app list saved.</string>
+    <string name="accessibility_instruction">Find \'Prayer Shield\' in the list and turn it on.</string>
+    <string name="no_location_provider">No location provider available. Turn on Location in your phone settings.</string>
+    <string name="finding_location">Finding your location...</string>
+    <string name="location_permission_needed">Location permission needed to auto-fill prayer times.</string>
+    <string name="location_success">Prayer times estimated for your location. Double check them against a source you trust.</string>
+    <string name="due_now">Due now</string>
+    <string name="all_caught_up_emoji">All caught up 🎉</string>
+    <string name="all_caught_up_sub">Every prayer marked for today</string>
+    <string name="next_prayer_in_format">%1$s is in %2$s</string>
+    <string name="get_ready">Get ready to pray</string>
+    <string name="fajr_restriction_toast">Fajr can only be marked during Fajr or Dhuhr times.</string>
+    <string name="prayer_restriction_toast_format">%1$s can only be marked when it\'s time to pray.</string>
+    <string name="device_admin_explanation">This lets Prayer Shield require you to deactivate it here before it can be uninstalled.</string>
+
+    <plurals name="time_unit_hour">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
+    <plurals name="time_unit_minute">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <string name="time_unit_and"> and </string>
+
+    <string name="widget_ready_format">%1$s is ready</string>
+    <string name="widget_mark_prompt">Tap button to mark as prayed</string>
+    <string name="widget_next_format">Next: %1$s</string>
+    <string name="widget_no_prayer_set">Set your prayer times</string>
+    <string name="widget_mark_button_format">Mark %1$s prayed</string>
+</resources>

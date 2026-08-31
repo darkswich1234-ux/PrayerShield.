@@ -1,0 +1,8 @@
+<resources>
+    <!-- Android 12+ Material You: these system color resources are filled in
+         by the OS at render time from the user's wallpaper, and work directly
+         inside widget RemoteViews without any extra code. -->
+    <color name="widget_background">@android:color/system_accent1_600</color>
+    <color name="widget_on_background">@android:color/system_accent1_50</color>
+    <color name="widget_on_background_secondary">@android:color/system_accent1_100</color>
+</resources>

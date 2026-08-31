@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_prayers"
+        android:icon="@drawable/ic_tab_prayer"
+        android:title="Prayers" />
+    <item
+        android:id="@+id/nav_apps"
+        android:icon="@drawable/ic_tab_apps"
+        android:title="Apps" />
+    <item
+        android:id="@+id/nav_protect"
+        android:icon="@drawable/ic_tab_protect"
+        android:title="Protect" />
+</menu>
