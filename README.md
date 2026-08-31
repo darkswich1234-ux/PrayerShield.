@@ -19,9 +19,9 @@
 ## 📱 Screenshots
 
 <p align="center">
-  <img src="https://via.placeholder.com/300x600.png?text=Dashboard" width="30%" />
-  <img src="https://via.placeholder.com/300x600.png?text=App+Selection" width="30%" />
-  <img src="https://via.placeholder.com/300x600.png?text=Widget" width="30%" />
+  <img src="screenshots/dashboard.jpg" width="30%" />
+  <img src="screenshots/app_selection.jpg" width="30%" />
+  <img src="screenshots/protection.jpg" width="30%" />
 </p>
 
 ## 🚀 Getting Started
