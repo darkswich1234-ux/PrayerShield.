@@ -19,11 +19,17 @@ import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
@@ -32,12 +38,21 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
     private val locationPermissionRequestCode = 42
+    private val cameraPermissionRequestCode = 43
+
+    private lateinit var cameraExecutor: ExecutorService
 
     private val prayerTimeButtons = mutableMapOf<String, Button>()
     private val prayerStatusViews = mutableMapOf<String, TextView>()
@@ -62,6 +77,29 @@ class MainActivity : AppCompatActivity() {
     private lateinit var prayerCardsRow: LinearLayout
     private val prayerCards = mutableMapOf<String, MaterialCardView>()
 
+    private val exportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        uri?.let {
+            contentResolver.openOutputStream(it)?.use { stream ->
+                stream.write(SyncManager.generateSyncPayload().toByteArray())
+                Toast.makeText(this, "Streak exported successfully", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private val importLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let {
+            contentResolver.openInputStream(it)?.use { stream ->
+                val payload = stream.bufferedReader().use { r -> r.readText() }
+                if (SyncManager.applySyncPayload(payload)) {
+                    refreshAll()
+                    Toast.makeText(this, "Streak imported successfully", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Invalid sync file", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     private val deviceAdminLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         setupProtectionTab()
     }
@@ -70,6 +108,8 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        cameraExecutor = Executors.newSingleThreadExecutor()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_root)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -242,6 +282,18 @@ class MainActivity : AppCompatActivity() {
         
         findViewById<Button>(R.id.btnTipDeveloper).setOnClickListener {
             openKofi()
+        }
+
+        findViewById<Button>(R.id.btnExportStreak).setOnClickListener {
+            exportLauncher.launch("prayershield_sync.json")
+        }
+
+        findViewById<Button>(R.id.btnImportStreak).setOnClickListener {
+            importLauncher.launch(arrayOf("application/json", "application/octet-stream"))
+        }
+
+        findViewById<Button>(R.id.btnScanQR).setOnClickListener {
+            checkCameraPermissionAndScan()
         }
 
         if (!PrayerManager.hasSeenTipDialog()) {
@@ -537,6 +589,81 @@ class MainActivity : AppCompatActivity() {
         ).show()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
+    }
+
+    private fun checkCameraPermissionAndScan() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            startQrScanner()
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), cameraPermissionRequestCode)
+        }
+    }
+
+    private fun startQrScanner() {
+        val previewView = PreviewView(this)
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Scan Sync QR")
+            .setView(previewView)
+            .setNegativeButton("Cancel", null)
+            .show()
+
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        cameraProviderFuture.addListener({
+            val cameraProvider = cameraProviderFuture.get()
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(previewView.surfaceProvider)
+            }
+
+            val imageAnalysis = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
+
+            val scanner = BarcodeScanning.getClient(
+                BarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                    .build()
+            )
+
+            imageAnalysis.setAnalyzer(cameraExecutor) { imageProxy ->
+                val mediaImage = imageProxy.image
+                if (mediaImage != null) {
+                    val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                    scanner.process(image)
+                        .addOnSuccessListener { barcodes ->
+                            for (barcode in barcodes) {
+                                val rawValue = barcode.rawValue
+                                if (rawValue != null) {
+                                    runOnUiThread {
+                                        if (SyncManager.applySyncPayload(rawValue)) {
+                                            dialog.dismiss()
+                                            cameraProvider.unbindAll()
+                                            refreshAll()
+                                            Toast.makeText(this, "Sync Successful!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .addOnCompleteListener {
+                            imageProxy.close()
+                        }
+                } else {
+                    imageProxy.close()
+                }
+            }
+
+            try {
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageAnalysis)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Camera error", Toast.LENGTH_SHORT).show()
+            }
+        }, ContextCompat.getMainExecutor(this))
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -545,6 +672,9 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == locationPermissionRequestCode && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
             requestLocationAndCalculate()
+        }
+        if (requestCode == cameraPermissionRequestCode && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
+            startQrScanner()
         }
     }
 

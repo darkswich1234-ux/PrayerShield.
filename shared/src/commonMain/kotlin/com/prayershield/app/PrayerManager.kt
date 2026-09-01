@@ -76,6 +76,14 @@ object PrayerManager {
         getSettings().putStringSet("completed_dates", completed)
     }
 
+    fun getCompletedDates(): Set<String> {
+        return getSettings().getStringSet("completed_dates", emptySet())
+    }
+
+    fun setCompletedDates(dates: Set<String>) {
+        getSettings().putStringSet("completed_dates", dates)
+    }
+
     /**
      * Current streak in days. If today is already fully complete, today counts;
      * otherwise counts backward starting from yesterday (today isn't "missed" until it ends).
