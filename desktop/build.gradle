@@ -1,0 +1,25 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '2.0.20'
+    id 'org.jetbrains.compose' version '1.6.11'
+}
+
+dependencies {
+    implementation project(':shared')
+    implementation(compose.desktop.currentOs)
+    implementation(compose.runtime)
+    implementation(compose.foundation)
+    implementation(compose.material3)
+    implementation(compose.ui)
+    implementation(compose.components.resources)
+}
+
+compose.desktop {
+    application {
+        mainClass = "com.prayershield.app.MainKt"
+        nativeDistributions {
+            targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe)
+            packageName = "PrayerShield"
+            packageVersion = "1.0.0"
+        }
+    }
+}

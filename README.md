@@ -43,11 +43,19 @@
 - **Jetpack Libraries**: Core-KTX, Activity-KTX, Appcompat.
 
 ### Build Instructions
+
+#### Android (APK)
 ```bash
 git clone https://github.com/darkswich1234-ux/PrayerShield..git
 cd PrayerShield.
-./gradlew assembleDebug
+./gradlew :app:assembleDebug
 ```
+
+#### Desktop (Windows EXE)
+```bash
+./gradlew :desktop:packageExe
+```
+The `.exe` file will be located in `desktop/build/compose/binaries/main/exe/`.
 
 ## 🤝 Contributing
 Contributions are welcome! Whether it's translating the app into a new language or adding a new feature, feel free to open a Pull Request.

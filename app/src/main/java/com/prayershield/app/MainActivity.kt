@@ -144,11 +144,11 @@ class MainActivity : AppCompatActivity() {
             card.addView(inner)
 
             card.setOnClickListener {
-                if (PrayerManager.canMarkPrayed(this, prayer)) {
-                    PrayerManager.markPrayed(this, prayer)
+                if (PrayerManager.canMarkPrayed(prayer)) {
+                    PrayerManager.markPrayed(prayer)
                     refreshAll()
                     Toast.makeText(this, getString(R.string.prayed_toast_format, prayer), Toast.LENGTH_SHORT).show()
-                } else if (!PrayerManager.isPrayed(this, prayer)) {
+                } else if (!PrayerManager.isPrayed(prayer)) {
                     if (prayer == "Fajr") {
                         Toast.makeText(this, getString(R.string.fajr_restriction_toast), Toast.LENGTH_SHORT).show()
                     } else {
@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity() {
             label.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
 
             val timeBtn = Button(this)
-            timeBtn.text = minutesToLabel(PrayerManager.getPrayerTimeMinutes(this, prayer))
+            timeBtn.text = minutesToLabel(PrayerManager.getPrayerTimeMinutes(prayer))
             timeBtn.setOnClickListener { showTimePicker(prayer, timeBtn) }
             prayerTimeButtons[prayer] = timeBtn
 
@@ -190,8 +190,8 @@ class MainActivity : AppCompatActivity() {
             val prayedBtn = Button(this)
             prayedBtn.text = getString(R.string.mark_prayed_label)
             prayedBtn.setOnClickListener {
-                if (PrayerManager.canMarkPrayed(this, prayer)) {
-                    PrayerManager.markPrayed(this, prayer)
+                if (PrayerManager.canMarkPrayed(prayer)) {
+                    PrayerManager.markPrayed(prayer)
                     refreshAll()
                     Toast.makeText(this, getString(R.string.prayed_toast_format, prayer), Toast.LENGTH_SHORT).show()
                 } else {
@@ -216,7 +216,7 @@ class MainActivity : AppCompatActivity() {
 
         btnSaveApps.setOnClickListener {
             val selected = checkBoxes.filter { it.first.isChecked }.map { it.second }.toSet()
-            PrayerManager.setBlockedApps(this, selected)
+            PrayerManager.setBlockedApps(selected)
             refreshWidgets()
             Toast.makeText(this, getString(R.string.apps_saved_toast), Toast.LENGTH_SHORT).show()
         }
@@ -244,7 +244,7 @@ class MainActivity : AppCompatActivity() {
             openKofi()
         }
 
-        if (!PrayerManager.hasSeenTipDialog(this)) {
+        if (!PrayerManager.hasSeenTipDialog()) {
             showTipDialog()
         }
     }
@@ -255,10 +255,10 @@ class MainActivity : AppCompatActivity() {
             .setMessage(R.string.tip_message)
             .setPositiveButton(R.string.tip_button) { _, _ ->
                 openKofi()
-                PrayerManager.setSeenTipDialog(this)
+                PrayerManager.setSeenTipDialog()
             }
             .setNegativeButton(R.string.dismiss_label) { _, _ ->
-                PrayerManager.setSeenTipDialog(this)
+                PrayerManager.setSeenTipDialog()
             }
             .setCancelable(false)
             .show()
@@ -308,15 +308,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateStreak() {
-        val streak = PrayerManager.getCurrentStreak(this)
+        val streak = PrayerManager.getCurrentStreak()
         streakText.text = streak.toString()
         ringStreakNumber.text = streak.toString()
-        val doneToday = PrayerManager.PRAYERS.count { PrayerManager.isPrayed(this, it) }
+        val doneToday = PrayerManager.PRAYERS.count { PrayerManager.isPrayed(it) }
         streakRing.progress = doneToday
     }
 
     private fun updatePrayerCards() {
-        val activePrayer = PrayerManager.activeUnprayedWindow(this)
+        val activePrayer = PrayerManager.activeUnprayedWindow()
         for (prayer in PrayerManager.PRAYERS) {
             val card = prayerCards[prayer] ?: continue
             @Suppress("UNCHECKED_CAST")
@@ -324,9 +324,9 @@ class MainActivity : AppCompatActivity() {
             val nameView = cardTag.first
             val timeView = cardTag.second
             val statusView = cardTag.third
-            timeView.text = minutesToLabel(PrayerManager.getPrayerTimeMinutes(this, prayer))
+            timeView.text = minutesToLabel(PrayerManager.getPrayerTimeMinutes(prayer))
 
-            val prayed = PrayerManager.isPrayed(this, prayer)
+            val prayed = PrayerManager.isPrayed(prayer)
             val bgAttr: Int
             val textAttr: Int
             when {
@@ -361,7 +361,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateNextGoal() {
-        val activePrayer = PrayerManager.activeUnprayedWindow(this)
+        val activePrayer = PrayerManager.activeUnprayedWindow()
         if (activePrayer != null) {
             nextGoalTitle.text = getString(R.string.next_prayer_in_format, activePrayer, getString(R.string.due_now))
             nextGoalSubtitle.text = getString(R.string.lock_banner_text)
@@ -374,8 +374,8 @@ class MainActivity : AppCompatActivity() {
         var bestPrayer: String? = null
         var bestDiff = Int.MAX_VALUE
         for (prayer in PrayerManager.PRAYERS) {
-            if (PrayerManager.isPrayed(this, prayer)) continue
-            val t = PrayerManager.getPrayerTimeMinutes(this, prayer)
+            if (PrayerManager.isPrayed(prayer)) continue
+            val t = PrayerManager.getPrayerTimeMinutes(prayer)
             val diff = if (t >= nowMinutes) t - nowMinutes else (t + 24 * 60) - nowMinutes
             if (diff < bestDiff) {
                 bestDiff = diff
@@ -410,7 +410,7 @@ class MainActivity : AppCompatActivity() {
     // ---------- Locking settings while a prayer is overdue ----------
 
     private fun updateLockState() {
-        val locked = PrayerManager.activeUnprayedWindow(this) != null
+        val locked = PrayerManager.activeUnprayedWindow() != null
         lockBanner.visibility = if (locked) View.VISIBLE else View.GONE
 
         prayerTimeButtons.values.forEach { it.isEnabled = !locked }
@@ -429,9 +429,9 @@ class MainActivity : AppCompatActivity() {
         val deviceAdminStatus = findViewById<TextView>(R.id.deviceAdminStatus)
         val checkboxProtectSettings = findViewById<CheckBox>(R.id.checkboxProtectSettings)
 
-        checkboxProtectSettings.isChecked = PrayerManager.isProtectSettingsEnabled(this)
+        checkboxProtectSettings.isChecked = PrayerManager.isProtectSettingsEnabled()
         checkboxProtectSettings.setOnCheckedChangeListener { _, checked ->
-            PrayerManager.setProtectSettingsEnabled(this, checked)
+            PrayerManager.setProtectSettingsEnabled(checked)
         }
 
         fun refreshDeviceAdminStatus() {
@@ -526,7 +526,7 @@ class MainActivity : AppCompatActivity() {
     private fun applyLocation(location: Location) {
         val times = PrayerTimeCalculator.calculateTodayMinutes(location.latitude, location.longitude)
         for ((prayer, minutes) in times) {
-            PrayerManager.setPrayerTimeMinutes(this, prayer, minutes)
+            PrayerManager.setPrayerTimeMinutes(prayer, minutes)
             prayerTimeButtons[prayer]?.text = minutesToLabel(minutes)
         }
         refreshAll()
@@ -554,12 +554,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showTimePicker(prayer: String, button: Button?) {
-        val current = PrayerManager.getPrayerTimeMinutes(this, prayer)
+        val current = PrayerManager.getPrayerTimeMinutes(prayer)
         val h = current / 60
         val m = current % 60
         TimePickerDialog(this, { _, hour, minute ->
             val minutes = hour * 60 + minute
-            PrayerManager.setPrayerTimeMinutes(this, prayer, minutes)
+            PrayerManager.setPrayerTimeMinutes(prayer, minutes)
             button?.text = minutesToLabel(minutes)
             refreshAll()
         }, h, m, false).show()
@@ -579,13 +579,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshStatuses() {
         for (prayer in PrayerManager.PRAYERS) {
-            val prayed = PrayerManager.isPrayed(this, prayer)
+            val prayed = PrayerManager.isPrayed(prayer)
             prayerStatusViews[prayer]?.text = if (prayed) getString(R.string.prayed_status) else getString(R.string.not_yet_status)
             
             // Find the "Mark prayed" button for this row and update its enabled state
             val btnIdx = PrayerManager.PRAYERS.indexOf(prayer)
             if (btnIdx < prayedButtons.size) {
-                prayedButtons[btnIdx].isEnabled = PrayerManager.canMarkPrayed(this, prayer)
+                prayedButtons[btnIdx].isEnabled = PrayerManager.canMarkPrayed(prayer)
             }
         }
     }
@@ -598,7 +598,7 @@ class MainActivity : AppCompatActivity() {
             .distinctBy { it.activityInfo.packageName }
             .sortedBy { it.loadLabel(pm).toString().lowercase() }
 
-        val alreadyBlocked = PrayerManager.getBlockedApps(this)
+        val alreadyBlocked = PrayerManager.getBlockedApps()
 
         for (app in apps) {
             val pkg = app.activityInfo.packageName

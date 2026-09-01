@@ -40,8 +40,8 @@ class PrayerGridWidgetProvider : AppWidgetProvider() {
         super.onReceive(context, intent)
         if (intent.action == ACTION_MARK_PRAYED) {
             val prayer = intent.getStringExtra(EXTRA_PRAYER)
-            if (prayer != null && PrayerManager.canMarkPrayed(context, prayer)) {
-                PrayerManager.markPrayed(context, prayer)
+            if (prayer != null && PrayerManager.canMarkPrayed(prayer)) {
+                PrayerManager.markPrayed(prayer)
                 refreshAll(context)
                 PrayerWidgetProvider.refreshAll(context)
             }
@@ -59,22 +59,22 @@ class PrayerGridWidgetProvider : AppWidgetProvider() {
             "Isha" to R.id.dotIsha
         )
 
-        val activePrayer = PrayerManager.activeUnprayedWindow(context)
+        val activePrayer = PrayerManager.activeUnprayedWindow()
 
         for (prayer in PrayerManager.PRAYERS) {
             val dotId = dotIds[prayer] ?: continue
             val symbol = when {
-                PrayerManager.isPrayed(context, prayer) -> "✓"
+                PrayerManager.isPrayed(prayer) -> "✓"
                 prayer == activePrayer -> "●"
                 else -> "○"
             }
             views.setTextViewText(dotId, symbol)
         }
 
-        val streak = PrayerManager.getCurrentStreak(context)
+        val streak = PrayerManager.getCurrentStreak()
         views.setTextViewText(R.id.gridStreak, context.getString(R.string.streak_format, streak.toString()))
 
-        val currentMarkable = PrayerManager.PRAYERS.find { PrayerManager.canMarkPrayed(context, it) }
+        val currentMarkable = PrayerManager.PRAYERS.find { PrayerManager.canMarkPrayed(it) }
 
         if (currentMarkable != null) {
             views.setTextViewText(R.id.gridWidgetStatus, context.getString(R.string.widget_ready_format, currentMarkable))

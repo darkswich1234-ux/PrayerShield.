@@ -1,0 +1,18 @@
+plugins {
+    id 'org.jetbrains.kotlin.multiplatform' version '2.0.20'
+}
+
+kotlin {
+    jvm()
+    androidTarget {
+        publishLibraryVariants("release", "debug")
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                // Shared logic dependencies
+            }
+        }
+    }
+}

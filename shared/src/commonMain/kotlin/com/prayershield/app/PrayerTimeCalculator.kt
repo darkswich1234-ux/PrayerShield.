@@ -4,15 +4,7 @@ import java.util.*
 import kotlin.math.*
 
 /**
- * Computes prayer times from latitude/longitude/date using the standard
- * solar-position method (the same general approach used by most prayer-time
- * calculators). Uses the Islamic Society of North America (ISNA) angles by
- * default: Fajr 15 degrees, Isha 15 degrees, and standard (Shafi) Asr shadow ratio.
- *
- * This is an approximation. Always sanity-check the first day's output
- * against a source you trust (e.g. your local mosque's schedule), and use
- * the manual time buttons in the app to correct anything that's off for
- * your area.
+ * Computes prayer times from latitude/longitude/date.
  */
 object PrayerTimeCalculator {
 

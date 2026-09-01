@@ -38,8 +38,8 @@ class PrayerWidgetProvider : AppWidgetProvider() {
         super.onReceive(context, intent)
         if (intent.action == ACTION_MARK_PRAYED) {
             val prayer = intent.getStringExtra(EXTRA_PRAYER)
-            if (prayer != null && PrayerManager.canMarkPrayed(context, prayer)) {
-                PrayerManager.markPrayed(context, prayer)
+            if (prayer != null && PrayerManager.canMarkPrayed(prayer)) {
+                PrayerManager.markPrayed(prayer)
                 refreshAll(context)
                 PrayerGridWidgetProvider.refreshAll(context)
             }
@@ -49,8 +49,8 @@ class PrayerWidgetProvider : AppWidgetProvider() {
     private fun updateWidget(context: Context, manager: AppWidgetManager, widgetId: Int) {
         val views = RemoteViews(context.packageName, R.layout.prayer_widget)
 
-        val activePrayer = PrayerManager.activeUnprayedWindow(context)
-        val streak = PrayerManager.getCurrentStreak(context)
+        val activePrayer = PrayerManager.activeUnprayedWindow()
+        val streak = PrayerManager.getCurrentStreak()
         views.setTextViewText(R.id.widgetStreak, context.getString(R.string.streak_format, streak.toString()))
 
         val dotIds = mapOf(
@@ -63,14 +63,14 @@ class PrayerWidgetProvider : AppWidgetProvider() {
         for (prayer in PrayerManager.PRAYERS) {
             val dotId = dotIds[prayer] ?: continue
             val symbol = when {
-                PrayerManager.isPrayed(context, prayer) -> "✓"
+                PrayerManager.isPrayed(prayer) -> "✓"
                 prayer == activePrayer -> "●"
                 else -> "○"
             }
             views.setTextViewText(dotId, symbol)
         }
 
-        val currentMarkable = PrayerManager.PRAYERS.find { PrayerManager.canMarkPrayed(context, it) }
+        val currentMarkable = PrayerManager.PRAYERS.find { PrayerManager.canMarkPrayed(it) }
 
         if (currentMarkable != null) {
             views.setTextViewText(R.id.widgetTitle, context.getString(R.string.widget_ready_format, currentMarkable))
@@ -87,7 +87,7 @@ class PrayerWidgetProvider : AppWidgetProvider() {
             )
             views.setOnClickPendingIntent(R.id.widgetMarkButton, markPending)
         } else {
-            val allPrayedToday = PrayerManager.PRAYERS.all { PrayerManager.isPrayed(context, it) }
+            val allPrayedToday = PrayerManager.PRAYERS.all { PrayerManager.isPrayed(it) }
             val nextPrayer = nextUpcomingPrayer(context)
             if (allPrayedToday) {
                 views.setTextViewText(R.id.widgetTitle, context.getString(R.string.all_caught_up))
@@ -96,7 +96,7 @@ class PrayerWidgetProvider : AppWidgetProvider() {
                     if (nextPrayer != null) context.getString(R.string.widget_next_format, nextPrayer) else context.getString(R.string.all_caught_up_sub)
                 )
             } else {
-                val markable = PrayerManager.PRAYERS.find { PrayerManager.canMarkPrayed(context, it) }
+                val markable = PrayerManager.PRAYERS.find { PrayerManager.canMarkPrayed(it) }
                 views.setTextViewText(R.id.widgetTitle, if (markable != null) context.getString(R.string.widget_ready_format, markable) else context.getString(R.string.not_yet_status))
                 views.setTextViewText(
                     R.id.widgetSubtitle,
@@ -123,7 +123,7 @@ class PrayerWidgetProvider : AppWidgetProvider() {
         var best: String? = null
         var bestDiff = Int.MAX_VALUE
         for (prayer in PrayerManager.PRAYERS) {
-            val t = PrayerManager.getPrayerTimeMinutes(context, prayer)
+            val t = PrayerManager.getPrayerTimeMinutes(prayer)
             val diff = if (t >= nowMinutes) t - nowMinutes else (t + 24 * 60) - nowMinutes
             if (diff < bestDiff) {
                 bestDiff = diff

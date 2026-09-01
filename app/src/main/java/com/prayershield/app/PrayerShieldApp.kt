@@ -6,6 +6,7 @@ import com.google.android.material.color.DynamicColors
 class PrayerShieldApp : Application() {
     override fun onCreate() {
         super.onCreate()
+        PrayerManager.init(AndroidSettingsProvider(this))
         // On Android 12+ this repaints the app's Material3 components using
         // colors extracted from the user's wallpaper (Material You).
         // On older Android versions it's a no-op and the fallback color in
