@@ -31,7 +31,7 @@
 - Optimized for **Android 15+** and **Android 16 (Baklava)**.
 
 ### Installation
-1. Download the latest APK from the [Releases](https://github.com/darkswich1234-ux/PrayerShieldApp/releases) page.
+1. Download the latest APK from the [Releases](https://github.com/darkswich1234-ux/PrayerShield./releases) page.
 2. Enable **Accessibility Services** for Prayer Shield (this is required to detect when blocked apps are opened).
 3. (Optional) Enable **Device Administrator** in the "Protect" tab for enhanced uninstall protection.
 
@@ -44,8 +44,8 @@
 
 ### Build Instructions
 ```bash
-git clone https://github.com/darkswich1234-ux/PrayerShieldApp.git
-cd PrayerShieldApp
+git clone https://github.com/darkswich1234-ux/PrayerShield..git
+cd PrayerShield.
 ./gradlew assembleDebug
 ```
 

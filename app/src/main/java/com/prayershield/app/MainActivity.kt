@@ -9,20 +9,27 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.TypedValue
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import java.text.SimpleDateFormat
@@ -72,6 +79,9 @@ class MainActivity : AppCompatActivity() {
 
         deviceAdminComponent = ComponentName(this, PrayerShieldDeviceAdminReceiver::class.java)
         devicePolicyManager = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
 
         val prayerContainer = findViewById<LinearLayout>(R.id.prayerContainer)
         appListContainer = findViewById(R.id.appListContainer)
@@ -229,6 +239,53 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupProtectionTab()
+        
+        findViewById<Button>(R.id.btnTipDeveloper).setOnClickListener {
+            openKofi()
+        }
+
+        if (!PrayerManager.hasSeenTipDialog(this)) {
+            showTipDialog()
+        }
+    }
+
+    private fun showTipDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.tip_title)
+            .setMessage(R.string.tip_message)
+            .setPositiveButton(R.string.tip_button) { _, _ ->
+                openKofi()
+                PrayerManager.setSeenTipDialog(this)
+            }
+            .setNegativeButton(R.string.dismiss_label) { _, _ ->
+                PrayerManager.setSeenTipDialog(this)
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun openKofi() {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, getString(R.string.kofi_url).toUri())
+            startActivity(intent)
+        } catch (_: Exception) {
+            Toast.makeText(this, "Could not open browser", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_tip -> {
+                openKofi()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun Int.dp(): Int = (this * resources.displayMetrics.density).toInt()

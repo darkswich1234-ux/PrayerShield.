@@ -167,4 +167,12 @@ object PrayerManager {
         if (packageName !in getBlockedApps(context)) return false
         return activeUnprayedWindow(context) != null
     }
+
+    fun hasSeenTipDialog(context: Context): Boolean {
+        return prefs(context).getBoolean("seen_tip_dialog", false)
+    }
+
+    fun setSeenTipDialog(context: Context) {
+        prefs(context).edit { putBoolean("seen_tip_dialog", true) }
+    }
 }

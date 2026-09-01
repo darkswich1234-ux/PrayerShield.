@@ -57,4 +57,11 @@
     <string name="widget_next_format">Next: %1$s</string>
     <string name="widget_no_prayer_set">Set your prayer times</string>
     <string name="widget_mark_button_format">Mark %1$s prayed</string>
+
+    <string name="tip_title">Support Prayer Shield</string>
+    <string name="tip_message">If you find this app helpful, consider supporting its development with a small tip! It helps keep the project alive and free for everyone.</string>
+    <string name="tip_button">Tip on Ko-fi</string>
+    <string name="dismiss_label">Maybe later</string>
+    <string name="menu_tip">Support the Developer</string>
+    <string name="kofi_url">https://ko-fi.com/darkswich1234</string>
 </resources>
