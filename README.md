@@ -59,7 +59,7 @@ Contributions are welcome! Whether it's translating the app into a new language 
 5. Open a Pull Request
 
 ## 📄 License
-This project is licensed under the GNU General Public License v3.0
+This project is licensed under the GNU General Public License v3.0.
 
 ---
 *Developed with focus and intent.*
