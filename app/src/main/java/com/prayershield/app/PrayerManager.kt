@@ -153,4 +153,12 @@ object PrayerManager {
     fun setSeenTipDialog(context: Context) {
         prefs(context).edit { putBoolean("seen_tip_dialog", true) }
     }
+
+    fun resetToday(context: Context) {
+        prefs(context).edit {
+            PRAYERS.forEach { prayer ->
+                remove("prayed_date_$prayer")
+            }
+        }
+    }
 }

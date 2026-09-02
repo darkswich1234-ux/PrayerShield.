@@ -33,10 +33,11 @@
     <string name="finding_location">Finding your location...</string>
     <string name="location_permission_needed">Location permission needed to auto-fill prayer times.</string>
     <string name="location_success">Prayer times estimated for your location. Double check them against a source you trust.</string>
-    <string name="due_now">Due now</string>
+    <string name="due_now">due now</string>
     <string name="all_caught_up_emoji">All caught up 🎉</string>
     <string name="all_caught_up_sub">Every prayer marked for today</string>
     <string name="next_prayer_in_format">%1$s is in %2$s</string>
+    <string name="next_prayer_due_format">%1$s is due now</string>
     <string name="get_ready">Get ready to pray</string>
     <string name="fajr_restriction_toast">Fajr can only be marked during Fajr or Dhuhr times.</string>
     <string name="prayer_restriction_toast_format">%1$s can only be marked when it\'s time to pray.</string>
@@ -64,4 +65,7 @@
     <string name="dismiss_label">Maybe later</string>
     <string name="menu_tip">Support the Developer</string>
     <string name="kofi_url">https://ko-fi.com/darkswich1234</string>
+    <string name="reset_today_title">Reset Today\'s Progress</string>
+    <string name="reset_today_desc">Clear all prayer checkmarks for today. This will not affect your total streak.</string>
+    <string name="reset_button">Reset Now</string>
 </resources>

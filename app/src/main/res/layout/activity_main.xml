@@ -419,7 +419,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:text="Sync with Desktop"
+                    android:text="@string/reset_today_title"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorPrimary" />
@@ -428,43 +428,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Transfer your prayer streak to or from your computer."
+                    android:text="@string/reset_today_desc"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="13sp" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <Button
+                    android:id="@+id/btnResetToday"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btnExportStreak"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        android:text="Export" />
-
-                    <Button
-                        android:id="@+id/btnImportStreak"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        android:text="Import" />
-
-                    <Button
-                        android:id="@+id/btnScanQR"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Scan QR" />
-
-                </LinearLayout>
+                    android:text="@string/reset_button"
+                    android:textColor="?attr/colorError"
+                    app:strokeColor="?attr/colorError" />
 
             </LinearLayout>
 
