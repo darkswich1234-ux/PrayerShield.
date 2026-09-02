@@ -29,6 +29,9 @@ class PrayerWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        if (PrayerManager.isAutoLocationEnabled(context)) {
+            LocationUpdateWorker.schedule(context)
+        }
         for (id in appWidgetIds) {
             updateWidget(context, appWidgetManager, id)
         }

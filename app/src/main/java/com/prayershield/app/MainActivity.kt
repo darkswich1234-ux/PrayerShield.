@@ -250,6 +250,22 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Today's progress reset", Toast.LENGTH_SHORT).show()
         }
 
+        val checkboxAutoLocation = findViewById<CheckBox>(R.id.checkboxAutoLocation)
+        checkboxAutoLocation.isChecked = PrayerManager.isAutoLocationEnabled(this)
+        checkboxAutoLocation.setOnCheckedChangeListener { _, checked ->
+            if (checked) {
+                requestBackgroundLocationAndEnable()
+            } else {
+                PrayerManager.setAutoLocationEnabled(this, false)
+            }
+        }
+
+        val checkboxSleepShieldSync = findViewById<CheckBox>(R.id.checkboxSleepShieldSync)
+        checkboxSleepShieldSync.isChecked = PrayerManager.isSleepShieldSyncEnabled(this)
+        checkboxSleepShieldSync.setOnCheckedChangeListener { _, checked ->
+            PrayerManager.setSleepShieldSyncEnabled(this, checked)
+        }
+
         if (!PrayerManager.hasSeenTipDialog(this)) {
             showTipDialog()
         }
@@ -535,6 +551,7 @@ class MainActivity : AppCompatActivity() {
             PrayerManager.setPrayerTimeMinutes(this, prayer, minutes)
             prayerTimeButtons[prayer]?.text = minutesToLabel(minutes)
         }
+        PrayerManager.notifyPrayerTimesChanged(this)
         refreshAll()
         Toast.makeText(
             this,
@@ -543,14 +560,63 @@ class MainActivity : AppCompatActivity() {
         ).show()
     }
 
+    private fun requestBackgroundLocationAndEnable() {
+        val permissions = mutableListOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        }
+
+        val missing = permissions.filter { ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }
+
+        if (missing.isEmpty()) {
+            PrayerManager.setAutoLocationEnabled(this, true)
+        } else {
+            if (missing.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION) && missing.size == 1) {
+                // Background location must be requested separately on some Android versions
+                AlertDialog.Builder(this)
+                    .setTitle("Background Location Required")
+                    .setMessage("To update prayer times automatically, please select 'Allow all the time' in the next screen.")
+                    .setPositiveButton("Settings") { _, _ ->
+                        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), locationPermissionRequestCode)
+                    }
+                    .setNegativeButton("Cancel") { _, _ ->
+                        findViewById<CheckBox>(R.id.checkboxAutoLocation).isChecked = false
+                    }
+                    .show()
+            } else {
+                ActivityCompat.requestPermissions(this, missing.toTypedArray(), locationPermissionRequestCode)
+            }
+        }
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == locationPermissionRequestCode && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
-            requestLocationAndCalculate()
+        if (requestCode == locationPermissionRequestCode) {
+            if (grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
+                // Check if we now have enough to enable auto-location
+                val hasFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                val hasCoarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                if (hasFine || hasCoarse) {
+                    // Try to get one immediate update
+                    requestLocationAndCalculate()
+                    
+                    // If user enabled background location specifically
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || 
+                        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        PrayerManager.setAutoLocationEnabled(this, true)
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        // Nudge for background if they only gave foreground
+                        requestBackgroundLocationAndEnable()
+                    }
+                }
+            } else {
+                findViewById<CheckBox>(R.id.checkboxAutoLocation).isChecked = false
+                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -567,6 +633,9 @@ class MainActivity : AppCompatActivity() {
             val minutes = hour * 60 + minute
             PrayerManager.setPrayerTimeMinutes(this, prayer, minutes)
             button?.text = minutesToLabel(minutes)
+            if (prayer == "Fajr") {
+                PrayerManager.notifyPrayerTimesChanged(this)
+            }
             refreshAll()
         }, h, m, false).show()
     }

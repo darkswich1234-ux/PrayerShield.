@@ -68,4 +68,8 @@
     <string name="reset_today_title">Reset Today\'s Progress</string>
     <string name="reset_today_desc">Clear all prayer checkmarks for today. This will not affect your total streak.</string>
     <string name="reset_button">Reset Now</string>
+    <string name="sleep_shield_sync_title">Sleep Shield Integration</string>
+    <string name="sleep_shield_sync_desc">Allow Sleep Shield to read today\'s Fajr time to optimize your wake-up window.</string>
+    <string name="auto_location_title">Automatic Location Updates</string>
+    <string name="auto_location_desc">Update prayer times automatically in the background as you move.</string>
 </resources>

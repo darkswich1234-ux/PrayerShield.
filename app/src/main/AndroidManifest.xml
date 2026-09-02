@@ -8,6 +8,8 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".PrayerShieldApp"
@@ -74,6 +76,12 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/prayer_widget_grid_info" />
         </receiver>
+
+        <provider
+            android:name=".PrayerDataProvider"
+            android:authorities="com.prayershield.app.prayerdata"
+            android:exported="true"
+            android:grantUriPermissions="false" />
 
     </application>
 </manifest>

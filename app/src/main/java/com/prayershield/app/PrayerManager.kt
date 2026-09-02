@@ -1,6 +1,7 @@
 package com.prayershield.app
 
 import android.content.Context
+import android.content.Intent
 import androidx.core.content.edit
 import java.text.SimpleDateFormat
 import java.util.*
@@ -29,6 +30,7 @@ object PrayerManager {
     // Packages that should never be blocked
     val ALWAYS_ALLOWED = setOf(
         "com.prayershield.app",
+        "com.sleepshield.app",
         "com.android.systemui",
         "com.android.settings",
         "com.android.dialer",
@@ -152,6 +154,37 @@ object PrayerManager {
 
     fun setSeenTipDialog(context: Context) {
         prefs(context).edit { putBoolean("seen_tip_dialog", true) }
+    }
+
+    private const val SLEEP_SHIELD_SYNC_ENABLED = "sleep_shield_sync_enabled"
+    private const val AUTO_LOCATION_ENABLED = "auto_location_enabled"
+
+    fun isSleepShieldSyncEnabled(context: Context): Boolean {
+        return prefs(context).getBoolean(SLEEP_SHIELD_SYNC_ENABLED, false)
+    }
+
+    fun setSleepShieldSyncEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit { putBoolean(SLEEP_SHIELD_SYNC_ENABLED, enabled) }
+        if (enabled) {
+            notifyPrayerTimesChanged(context)
+        }
+    }
+
+    fun isAutoLocationEnabled(context: Context): Boolean {
+        return prefs(context).getBoolean(AUTO_LOCATION_ENABLED, false)
+    }
+
+    fun setAutoLocationEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit { putBoolean(AUTO_LOCATION_ENABLED, enabled) }
+        if (enabled) {
+            LocationUpdateWorker.schedule(context)
+        }
+    }
+
+    fun notifyPrayerTimesChanged(context: Context) {
+        val intent = Intent("com.prayershield.app.PRAYER_TIMES_CHANGED")
+            .setPackage("com.sleepshield.app")
+        context.sendBroadcast(intent)
     }
 
     fun resetToday(context: Context) {

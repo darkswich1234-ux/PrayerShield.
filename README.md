@@ -13,8 +13,9 @@
   - **Status Widget**: Quick overview of your current progress.
   - **Grid Widget**: Detailed view of all prayers.
   - **Lockscreen Support**: Mark prayers as done without even unlocking your phone.
-- **Automatic Prayer Times**: Estimates times based on your current location using modern Android Location APIs.
+- **Automatic Prayer Times**: Estimates times based on your current location using modern Android Location APIs. Now supports **Automatic Background Updates** to keep your schedule accurate as you travel.
 - **Uninstall Protection**: Includes an optional device administrator mode to prevent accidental removal during focused sessions.
+- **Sleep Shield Integration**: Optional sync that allows [Sleep Shield](https://github.com/darkswich1234-ux/SleepShield) to read your Fajr time for optimized wake-up windows.
 
 ## 📱 Screenshots
 
@@ -50,12 +51,6 @@ git clone https://github.com/darkswich1234-ux/PrayerShield..git
 cd PrayerShield.
 ./gradlew :app:assembleDebug
 ```
-
-#### Desktop (Windows EXE)
-```bash
-./gradlew :desktop:packageExe
-```
-The `.exe` file will be located in `desktop/build/compose/binaries/main/exe/`.
 
 ## 🤝 Contributing
 Contributions are welcome! Whether it's translating the app into a new language or adding a new feature, feel free to open a Pull Request.
