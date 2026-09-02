@@ -14,5 +14,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "PrayerShield"
 include ':app'
-include ':shared'
-include ':desktop'
