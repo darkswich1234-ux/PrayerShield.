@@ -22,7 +22,7 @@ class PrayerShieldDeviceAdminReceiver : DeviceAdminReceiver() {
     // there's no API for a normal app to block it outright — but this is the one place
     // we can inject a contextual nudge at the moment it matters most.
     override fun onDisableRequested(context: Context, intent: Intent): CharSequence {
-        val activePrayer = PrayerManager.activeUnprayedWindow()
+        val activePrayer = PrayerManager.activeUnprayedWindow(context)
         return if (activePrayer != null) {
             "$activePrayer hasn't been marked as prayed yet. Turning this off will let you uninstall Prayer Shield without completing it. Continue?"
         } else {
