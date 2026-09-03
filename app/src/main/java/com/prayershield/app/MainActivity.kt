@@ -81,10 +81,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun showComposeUI() {
         setContent {
-            ComposeDashboard(onSwitchToClassic = {
-                // Restart activity to switch back to XML
-                recreate()
-            })
+            ComposeDashboard(
+                onSwitchToClassic = {
+                    // Restart activity to switch back to XML
+                    recreate()
+                },
+                onRequestLocation = {
+                    requestLocationAndCalculate()
+                }
+            )
         }
     }
 
