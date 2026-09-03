@@ -331,12 +331,14 @@ class MainActivity : AppCompatActivity() {
     // ---------- Dashboard: ring, next goal, prayer cards ----------
 
     private fun refreshAll() {
+        refreshWidgets()
+        if (PrayerManager.getUiStyle(this) != "Classic") return
+        
         refreshStatuses()
         updateLockState()
         updateStreak()
         updatePrayerCards()
         updateNextGoal()
-        refreshWidgets()
     }
 
     private fun refreshWidgets() {
@@ -588,7 +590,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        refreshAll()
+        if (PrayerManager.getUiStyle(this) == "Classic") {
+            refreshAll()
+        }
     }
 
     private fun showTimePicker(prayer: String, button: Button?) {
