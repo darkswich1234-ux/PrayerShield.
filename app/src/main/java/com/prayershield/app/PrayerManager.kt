@@ -44,6 +44,12 @@ object PrayerManager {
     private fun todayKey(): String =
         SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
+    private fun yesterdayKey(): String {
+        val cal = Calendar.getInstance()
+        cal.add(Calendar.DATE, -1)
+        return SimpleDateFormat("yyyy-MM-dd", Locale.US).format(cal.time)
+    }
+
     fun getPrayerTimeMinutes(context: Context, prayer: String): Int {
         return prefs(context).getInt("time_$prayer", DEFAULT_TIMES[prayer] ?: 0)
     }
@@ -53,23 +59,40 @@ object PrayerManager {
     }
 
     fun isPrayed(context: Context, prayer: String): Boolean {
+        return isPrayedOnDate(context, prayer, todayKey())
+    }
+
+    private fun isPrayedOnDate(context: Context, prayer: String, date: String): Boolean {
         val storedDate = prefs(context).getString("prayed_date_$prayer", "")
-        return storedDate == todayKey()
+        return storedDate == date
     }
 
     fun markPrayed(context: Context, prayer: String) {
-        prefs(context).edit { putString("prayed_date_$prayer", todayKey()) }
-        recordDayCompletionIfNeeded(context)
+        // If we are currently in a wrap-around window from yesterday, mark it for yesterday.
+        val nowMinutes = currentMinutes()
+        val start = getPrayerTimeMinutes(context, prayer)
+        val targetDate = if (nowMinutes < start && isTimeInRange(nowMinutes, start, start + GRACE_MINUTES)) {
+            yesterdayKey()
+        } else {
+            todayKey()
+        }
+        
+        prefs(context).edit { putString("prayed_date_$prayer", targetDate) }
+        recordDayCompletionIfNeeded(context, targetDate)
     }
 
     fun allPrayedToday(context: Context): Boolean {
-        return PRAYERS.all { isPrayed(context, it) }
+        return allPrayedOnDate(context, todayKey())
     }
 
-    private fun recordDayCompletionIfNeeded(context: Context) {
-        if (!allPrayedToday(context)) return
+    private fun allPrayedOnDate(context: Context, date: String): Boolean {
+        return PRAYERS.all { isPrayedOnDate(context, it, date) }
+    }
+
+    private fun recordDayCompletionIfNeeded(context: Context, date: String) {
+        if (!allPrayedOnDate(context, date)) return
         val completed = HashSet(prefs(context).getStringSet("completed_dates", emptySet()) ?: emptySet())
-        completed.add(todayKey())
+        completed.add(date)
         prefs(context).edit { putStringSet("completed_dates", completed) }
     }
 
@@ -77,9 +100,20 @@ object PrayerManager {
         val completed = prefs(context).getStringSet("completed_dates", emptySet()) ?: emptySet()
         val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         val cal = Calendar.getInstance()
-        if (!completed.contains(todayKey())) {
+        val nowMinutes = currentMinutes()
+
+        // Decide which day to start the backward count from.
+        if (completed.contains(todayKey())) {
+            // Today is done! Start counting from today.
+        } else if (nowMinutes < 4 * 60 && !allPrayedOnDate(context, yesterdayKey())) {
+            // It's early morning and yesterday (e.g. Monday) isn't finished yet.
+            // Don't break the streak! Start counting from the day before yesterday (Sunday).
+            cal.add(Calendar.DATE, -2)
+        } else {
+            // Normal case: today isn't done, start checking from yesterday.
             cal.add(Calendar.DATE, -1)
         }
+
         var streak = 0
         while (completed.contains(fmt.format(cal.time))) {
             streak++
@@ -108,17 +142,30 @@ object PrayerManager {
         val nowMinutes = currentMinutes()
         for (prayer in PRAYERS) {
             val start = getPrayerTimeMinutes(context, prayer)
-            if (isTimeInRange(nowMinutes, start, start + GRACE_MINUTES) && !isPrayed(context, prayer)) {
-                return prayer
+            val end = start + GRACE_MINUTES
+            if (isTimeInRange(nowMinutes, start, end)) {
+                // If nowMinutes < start, we are checking yesterday's instance of this prayer
+                val checkDate = if (nowMinutes < start) yesterdayKey() else todayKey()
+                if (!isPrayedOnDate(context, prayer, checkDate)) {
+                    return prayer
+                }
             }
         }
         return null
     }
 
     fun canMarkPrayed(context: Context, prayer: String): Boolean {
-        if (isPrayed(context, prayer)) return false
         val nowMinutes = currentMinutes()
         val prayerStart = getPrayerTimeMinutes(context, prayer)
+
+        // Check if we are in the wrap-around window for YESTERDAY'S prayer
+        if (nowMinutes < prayerStart && isTimeInRange(nowMinutes, prayerStart, prayerStart + GRACE_MINUTES)) {
+            return !isPrayedOnDate(context, prayer, yesterdayKey())
+        }
+
+        // Normal check for TODAY
+        if (isPrayedOnDate(context, prayer, todayKey())) return false
+        
         return if (prayer == "Fajr") {
             val dhuhrStart = getPrayerTimeMinutes(context, "Dhuhr")
             val dhuhrEnd = dhuhrStart + GRACE_MINUTES
