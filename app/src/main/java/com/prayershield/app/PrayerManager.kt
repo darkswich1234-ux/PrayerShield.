@@ -158,6 +158,8 @@ object PrayerManager {
 
     private const val SLEEP_SHIELD_SYNC_ENABLED = "sleep_shield_sync_enabled"
     private const val AUTO_LOCATION_ENABLED = "auto_location_enabled"
+    private const val UI_STYLE = "ui_style"
+    private const val AMOLED_BLACK = "amoled_black"
 
     fun isSleepShieldSyncEnabled(context: Context): Boolean {
         return prefs(context).getBoolean(SLEEP_SHIELD_SYNC_ENABLED, false)
@@ -179,6 +181,22 @@ object PrayerManager {
         if (enabled) {
             LocationUpdateWorker.schedule(context)
         }
+    }
+
+    fun getUiStyle(context: Context): String {
+        return prefs(context).getString(UI_STYLE, "Classic") ?: "Classic"
+    }
+
+    fun setUiStyle(context: Context, style: String) {
+        prefs(context).edit { putString(UI_STYLE, style) }
+    }
+
+    fun isAmoledBlackEnabled(context: Context): Boolean {
+        return prefs(context).getBoolean(AMOLED_BLACK, false)
+    }
+
+    fun setAmoledBlackEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit { putBoolean(AMOLED_BLACK, enabled) }
     }
 
     fun notifyPrayerTimesChanged(context: Context) {
