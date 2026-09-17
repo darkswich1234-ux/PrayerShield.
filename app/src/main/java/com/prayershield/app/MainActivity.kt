@@ -286,6 +286,41 @@ class MainActivity : AppCompatActivity() {
             PrayerManager.setSleepShieldSyncEnabled(this, checked)
         }
 
+        val checkboxSafeTimes = findViewById<CheckBox>(R.id.checkboxSafeTimes)
+        val btnSafeStart = findViewById<Button>(R.id.btnSafeStart)
+        val btnSafeEnd = findViewById<Button>(R.id.btnSafeEnd)
+
+        checkboxSafeTimes.isChecked = PrayerManager.isSafeTimesEnabled(this)
+        checkboxSafeTimes.setOnCheckedChangeListener { _, checked ->
+            PrayerManager.setSafeTimesEnabled(this, checked)
+            if (checked) {
+                // Check if we should notify immediately
+                if (PrayerManager.shouldNotifyForPrayerBreak(this)) {
+                    PrayerManager.notifyPrayerTimesChanged(this)
+                }
+            }
+        }
+
+        btnSafeStart.text = "Start: ${minutesToLabel(PrayerManager.getSafeStartTime(this))}"
+        btnSafeStart.setOnClickListener {
+            val current = PrayerManager.getSafeStartTime(this)
+            TimePickerDialog(this, { _, h, m ->
+                val mins = h * 60 + m
+                PrayerManager.setSafeStartTime(this, mins)
+                btnSafeStart.text = "Start: ${minutesToLabel(mins)}"
+            }, current / 60, current % 60, false).show()
+        }
+
+        btnSafeEnd.text = "End: ${minutesToLabel(PrayerManager.getSafeEndTime(this))}"
+        btnSafeEnd.setOnClickListener {
+            val current = PrayerManager.getSafeEndTime(this)
+            TimePickerDialog(this, { _, h, m ->
+                val mins = h * 60 + m
+                PrayerManager.setSafeEndTime(this, mins)
+                btnSafeEnd.text = "End: ${minutesToLabel(mins)}"
+            }, current / 60, current % 60, false).show()
+        }
+
         if (!PrayerManager.hasSeenTipDialog(this)) {
             showTipDialog()
         }

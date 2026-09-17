@@ -229,6 +229,15 @@ fun NextGoalCard(activePrayer: String?, allDone: Boolean) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = onCardColor
             )
+
+            if (!PrayerManager.isSleepShieldSyncEnabled(context)) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "For more accurate Fajr times link Prayer Shield to Sleep Shield in Settings.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = onCardColor.copy(alpha = 0.8f)
+                )
+            }
         }
     }
 }
@@ -294,6 +303,9 @@ fun EditTimeRow(prayer: String, onTimeChanged: () -> Unit) {
                     val newMinutes = hour * 60 + minute
                     PrayerManager.setPrayerTimeMinutes(context, prayer, newMinutes)
                     minutes = newMinutes
+                    if (prayer == "Fajr") {
+                        PrayerManager.notifyPrayerTimesChanged(context)
+                    }
                     onTimeChanged()
                 }, h, m, false).show()
             },
@@ -437,6 +449,7 @@ fun ProtectTab(onSwitchToClassic: () -> Unit, isAmoled: Boolean, onAmoledToggle:
     var isSleepSync by remember { mutableStateOf(PrayerManager.isSleepShieldSyncEnabled(context)) }
     var isProtectSettings by remember { mutableStateOf(PrayerManager.isProtectSettingsEnabled(context)) }
     var isAutoLocation by remember { mutableStateOf(PrayerManager.isAutoLocationEnabled(context)) }
+    var isSafeTimes by remember { mutableStateOf(PrayerManager.isSafeTimesEnabled(context)) }
     
     val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     val adminComp = ComponentName(context, PrayerShieldDeviceAdminReceiver::class.java)
@@ -459,6 +472,56 @@ fun ProtectTab(onSwitchToClassic: () -> Unit, isAmoled: Boolean, onAmoledToggle:
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
             ) {
                 Text("Switch to Classic UI")
+            }
+        }
+
+        Spacer(Modifier.height(32.dp))
+        Text("Safe Times (School/Work)", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(12.dp))
+
+        SettingsCard {
+            ToggleRow("Safe Times Enabled", "Don't block apps during these hours.", isSafeTimes) {
+                isSafeTimes = it
+                PrayerManager.setSafeTimesEnabled(context, it)
+                if (it && PrayerManager.shouldNotifyForPrayerBreak(context)) {
+                    PrayerManager.notifyPrayerTimesChanged(context)
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            
+            var safeStart by remember { mutableIntStateOf(PrayerManager.getSafeStartTime(context)) }
+            var safeEnd by remember { mutableIntStateOf(PrayerManager.getSafeEndTime(context)) }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        TimePickerDialog(context, { _, h, m ->
+                            val mins = h * 60 + m
+                            PrayerManager.setSafeStartTime(context, mins)
+                            safeStart = mins
+                        }, safeStart / 60, safeStart % 60, false).show()
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
+                ) {
+                    Text("Start: ${minutesToLabel(safeStart)}", fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = {
+                        TimePickerDialog(context, { _, h, m ->
+                            val mins = h * 60 + m
+                            PrayerManager.setSafeEndTime(context, mins)
+                            safeEnd = mins
+                        }, safeEnd / 60, safeEnd % 60, false).show()
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
+                ) {
+                    Text("End: ${minutesToLabel(safeEnd)}", fontSize = 12.sp)
+                }
             }
         }
 

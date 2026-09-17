@@ -72,4 +72,9 @@
     <string name="sleep_shield_sync_desc">Allow Sleep Shield to read today\'s Fajr time to optimize your wake-up window.</string>
     <string name="auto_location_title">Automatic Location Updates</string>
     <string name="auto_location_desc">Update prayer times automatically in the background as you move.</string>
+    <string name="safe_times_title">Safe Times (School/Work)</string>
+    <string name="safe_times_desc">Don\'t block apps during these hours (e.g., 8 AM - 3 PM).</string>
+    <string name="safe_start_label">Start Time</string>
+    <string name="safe_end_label">End Time</string>
+    <string name="activate_sleep_shield_ui">Activate Sleep Shield UI</string>
 </resources>

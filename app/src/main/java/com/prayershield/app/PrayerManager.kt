@@ -1,7 +1,13 @@
 package com.prayershield.app
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import java.text.SimpleDateFormat
 import java.util.*
@@ -192,6 +198,10 @@ object PrayerManager {
     fun isAppBlockedNow(context: Context, packageName: String): Boolean {
         if (packageName in ALWAYS_ALLOWED) return false
         if (packageName !in getBlockedApps(context)) return false
+        
+        // Don't block during Safe Times (e.g. School)
+        if (isSafeTimeActive(context)) return false
+        
         return activeUnprayedWindow(context) != null
     }
 
@@ -207,6 +217,9 @@ object PrayerManager {
     private const val AUTO_LOCATION_ENABLED = "auto_location_enabled"
     private const val UI_STYLE = "ui_style"
     private const val AMOLED_BLACK = "amoled_black"
+    private const val SAFE_TIMES_ENABLED = "safe_times_enabled"
+    private const val SAFE_START_MINUTES = "safe_start_minutes"
+    private const val SAFE_END_MINUTES = "safe_end_minutes"
 
     fun isSleepShieldSyncEnabled(context: Context): Boolean {
         return prefs(context).getBoolean(SLEEP_SHIELD_SYNC_ENABLED, false)
@@ -246,10 +259,81 @@ object PrayerManager {
         prefs(context).edit { putBoolean(AMOLED_BLACK, enabled) }
     }
 
+    fun isSafeTimesEnabled(context: Context): Boolean {
+        return prefs(context).getBoolean(SAFE_TIMES_ENABLED, false)
+    }
+
+    fun setSafeTimesEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit { putBoolean(SAFE_TIMES_ENABLED, enabled) }
+    }
+
+    fun getSafeStartTime(context: Context): Int {
+        return prefs(context).getInt(SAFE_START_MINUTES, 8 * 60) // Default 8:00 AM
+    }
+
+    fun setSafeStartTime(context: Context, minutes: Int) {
+        prefs(context).edit { putInt(SAFE_START_MINUTES, minutes) }
+    }
+
+    fun getSafeEndTime(context: Context): Int {
+        return prefs(context).getInt(SAFE_END_MINUTES, 15 * 60) // Default 3:00 PM
+    }
+
+    fun setSafeEndTime(context: Context, minutes: Int) {
+        prefs(context).edit { putInt(SAFE_END_MINUTES, minutes) }
+    }
+
+    fun isSafeTimeActive(context: Context): Boolean {
+        if (!isSafeTimesEnabled(context)) return false
+        val now = currentMinutes()
+        return isTimeInRange(now, getSafeStartTime(context), getSafeEndTime(context))
+    }
+
+    /**
+     * Logic for the "Smart Reminder": If Duhr window ends (start of Asr)
+     * BEFORE safe time ends (school ends), and Duhr isn't prayed,
+     * the user might miss Duhr while in school.
+     */
+    fun shouldNotifyForPrayerBreak(context: Context): Boolean {
+        if (!isSafeTimeActive(context)) return false
+        if (isPrayed(context, "Dhuhr")) return false
+
+        val asrStart = getPrayerTimeMinutes(context, "Asr")
+        val safeEnd = getSafeEndTime(context)
+        
+        // If Asr starts before school ends, you're going to miss Duhr!
+        return asrStart < safeEnd
+    }
+
     fun notifyPrayerTimesChanged(context: Context) {
         val intent = Intent("com.prayershield.app.PRAYER_TIMES_CHANGED")
             .setPackage("com.sleepshield.app")
         context.sendBroadcast(intent)
+        
+        // Check for prayer break reminder
+        if (shouldNotifyForPrayerBreak(context)) {
+            sendPrayerBreakNotification(context)
+        }
+    }
+
+    private fun sendPrayerBreakNotification(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                return
+            }
+        }
+
+        val builder = NotificationCompat.Builder(context, "prayer_reminders")
+            .setSmallIcon(R.drawable.ic_tab_prayer)
+            .setContentTitle("Dhuhr Prayer Break")
+            .setContentText("Dhuhr will end before school does. Ask to pray now!")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+
+        val notificationManager = NotificationManagerCompat.from(context)
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            notificationManager.notify(1001, builder.build())
+        }
     }
 
     fun resetToday(context: Context) {
